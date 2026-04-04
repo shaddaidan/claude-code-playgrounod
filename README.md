@@ -1,88 +1,96 @@
-# claude-code-playgrounod
-
-> Yes, the repo name has a typo. No, we're not fixing it. It stays as a monument to the chaos within.
+# NEURONS NOT INCLUDED
 
 ```
-        ░░░░░░░░░░░░░░░░░░░░░░
-        ░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░
-        ░░▓▓░░░░░░░░░░░░▓▓░░
-        ░░▓▓░░ >_ ██░░░░▓▓░░
-        ░░▓▓░░░░░░░░░░░░▓▓░░
-        ░░▓▓░▒▒▒▒▒▒▒▒▒░▓▓░░
-        ░░▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░
-        ░░░░░░▓▓▓▓▓▓▓▓░░░░░░
-        ░░░▓▓▓▓▓▓▓▓▓▓▓▓▓░░░
-        ░░░▓▓░▓▓░░░░▓▓░▓▓░░░
-        ░░░░░░░░░░░░░░░░░░░░░░
-             C O D E R
-          [ insert panic ]
+  ░░░░░▓▓▓▓▓▓▓░░░░░░
+  ░░▓▓▓▓▓▓▓▓▓▓▓▓░░░░
+  ░▓▓▓▓▓░░░▓▓▓▓▓▓░░░
+  ▓▓▓▓░▓▓▓▓░▓▓▓▓▓▓░░
+  ▓▓▓▓░░░░░░░▓▓▓▓▓▓░
+  ░▓▓▓▓░▓▓▓░░▓▓▓▓▓░░
+  ░░▓▓▓▓▓░░░▓▓▓▓▓░░░
+  ░░░░▓▓▓▓▓▓▓▓▓▓░░░░
+  ░░░░░░░▓▓▓▓░░░░░░░
+  ░░░░░░░░▓▓░░░░░░░░
 ```
 
----
+### *(spoiler: you don't)*
 
-## What is this?
-
-This is the official sandbox where we do **absolutely unhinged things** to code and watch what happens.
-
-Think of it as a lab — except the lab is on fire, the scientists are sleep-deprived, and the experiment is "how fast can we write something truly terrible?"
+**Live demo:** https://shaddaidan.github.io/claude-code-playgrounod/
 
 ---
 
-## Goals
+## What Is This
 
-- **Test things.** Weird things. Pointless things. Glorious things.
-- **Break things.** Intentionally. Unintentionally. Both are valid.
-- **Speed run bad code.** We're going for world record "worst working app in under 10 minutes."
-- **Learn something.** Probably by accident.
+A pixel-art Simon Says memory game that will make you question whether your neurons ever showed up for work in the first place.
 
----
-
-## Rules
-
-1. There are no rules.
-2. Rule 1 is a lie — don't push credentials. Everything else is fair game.
-3. If it works, we're disappointed. Ship it anyway.
+A 3x3 grid of glowing colored tiles flashes a sequence at you. You click them back in the same order. Simple? Sure. Humbling? Absolutely. Each successful round adds another tile. Every 5 rounds the game speeds up and your brain starts filing complaints with HR.
 
 ---
 
-## Methodology
+## How To Play
 
+- Watch the grid flash a sequence of colored tiles
+- Wait for the entire sequence to finish — patience is required
+- Click the tiles **in the exact same order** you saw them
+- Nail it: the sequence grows by one tile, you get points, you feel briefly competent
+- Miss it: you lose a life, the sequence replays, and the tiles judge you in silence
+
+---
+
+## Scoring
+
+| Thing | Points |
+|---|---|
+| Correct sequence | sequence length x 10 |
+| Combo multiplier | starts 1x, +0.5 every 3 wins (max 4x) |
+| Wrong answer | multiplier resets. sorry. |
+
+---
+
+## The Science Bit (It's Real)
+
+This game trains **working memory** — the mental sticky note your **prefrontal cortex** uses to hold information while you act on it. Researchers consistently link stronger working memory to better focus, reasoning, learning speed, and resistance to distraction.
+
+By holding an increasingly long tile sequence in your head while suppressing the urge to just guess, you're exercising the exact neural machinery that lets you stay focused when it matters. So technically this is productivity.
+
+---
+
+## Difficulty Scaling
+
+- **Flash duration** starts at 600ms per tile
+- Drops by 60ms every level (floor: 250ms)
+- Sequence grows by 1 tile every round — by level 2 you're recalling 6+ tiles at faster speed
+- Combo multiplier rewards consistency; one mistake and it resets
+
+---
+
+## Humor Philosophy
+
+The game knows it's being mean to you. It leans into it. Error messages are honest. Level-up banners are concerned. The game over screen provides an official medical diagnosis. None of this is medical advice.
+
+---
+
+## Tech Stack
+
+- **HTML** — four screens, zero iframes
+- **CSS** — Press Start 2P font, CRT scanlines, pixel tile glow effects
+- **Vanilla JavaScript** — no frameworks, no dependencies, no excuses
+- **Web Audio API** — procedurally generated 8-bit tones for tile flashes and feedback
+
+No build step. Open `index.html` and it works.
+
+---
+
+## Running Locally
+
+```bash
+git clone https://github.com/shaddaidan/claude-code-playgrounod.git
+cd claude-code-playgrounod
+open index.html
 ```
-1. Have an idea
-2. Implement it wrong on purpose
-3. Get surprised when it somehow works
-4. Get more surprised when it doesn't
-5. Commit with the message "fix"
-6. Repeat
-```
+
+That's it. There is no `npm install`. There is no webpack. There is only the grid.
 
 ---
 
-## Current Status
-
-| Thing        | Status              |
-|--------------|---------------------|
-| Production   | What's production?  |
-| Tests        | Lol                 |
-| Code quality | Aggressively poor   |
-| Vibes        | Immaculate          |
-| README       | Overengineered      |
-
----
-
-## Speed Run Categories
-
-- **Any%** — Make something functional. Doesn't matter how.
-- **Glitchless** — No copy-pasting from Stack Overflow. (Hardest difficulty.)
-- **100% Broken** — Ship something that crashes on first run. Speedrun PB: 4 minutes.
-
----
-
-## Contributing
-
-If you want to add chaos, open a PR. If you want to refactor anything, please leave.
-
----
-
-*Built with Claude Code and zero regrets.*
-*Repo name typo preserved for historical accuracy.*
+> yes the repo name has a typo. it stays.
