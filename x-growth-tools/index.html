@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Tweet Character Counter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:   #ef4444;
+      --amber: #f59e0b;
+      --green: #22c55e;
+      --bg:    #0f172a;
+      --surface: #1e293b;
+      --border:  #334155;
+      --text:    #f1f5f9;
+      --muted:   #94a3b8;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 32px 16px 48px;
+      gap: 24px;
+      min-height: 100%;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-top: 4px;
+    }
+
+    /* ── Textarea card ── */
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.25s;
+    }
+
+    .card.tier-red    { border-color: var(--red); }
+    .card.tier-amber  { border-color: var(--amber); }
+    .card.tier-green  { border-color: var(--green); }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      color: var(--text);
+      font-size: 1.0625rem;
+      line-height: 1.6;
+      font-family: inherit;
+      caret-color: var(--text);
+    }
+
+    textarea::placeholder { color: var(--muted); }
+
+    /* ── Counter row ── */
+    .counter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .count-badge {
+      font-size: 2rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.03em;
+      transition: color 0.25s;
+      line-height: 1;
+    }
+
+    .count-badge.tier-red   { color: var(--red); }
+    .count-badge.tier-amber { color: var(--amber); }
+    .count-badge.tier-green { color: var(--green); }
+
+    .count-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* ── Progress arc ── */
+    .progress-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    svg.arc {
+      transform: rotate(-90deg);
+      width: 72px;
+      height: 72px;
+    }
+
+    .arc-bg   { fill: none; stroke: var(--border); stroke-width: 6; }
+    .arc-fill {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.15s, stroke 0.25s;
+    }
+
+    /* ── Tier indicator ── */
+    .tier-indicator {
+      width: 100%;
+      max-width: 560px;
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.25s, border-color 0.25s;
+      border: 1.5px solid transparent;
+    }
+
+    .tier-indicator.tier-red {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+    .tier-indicator.tier-amber {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+    .tier-indicator.tier-green {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+
+    .tier-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.25s;
+    }
+
+    .tier-indicator.tier-red   .tier-dot { background: var(--red); }
+    .tier-indicator.tier-amber .tier-dot { background: var(--amber); }
+    .tier-indicator.tier-green .tier-dot { background: var(--green); }
+
+    .tier-text strong {
+      display: block;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      transition: color 0.25s;
+    }
+
+    .tier-indicator.tier-red   .tier-text strong { color: var(--red); }
+    .tier-indicator.tier-amber .tier-text strong { color: var(--amber); }
+    .tier-indicator.tier-green .tier-text strong { color: var(--green); }
+
+    .tier-text span {
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    /* ── Tier legend ── */
+    .legend {
+      width: 100%;
+      max-width: 560px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .legend-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .legend-item .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 0 auto 6px;
+    }
+
+    .legend-item .range {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+    }
+
+    .legend-item .action {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .legend-item:nth-child(1) .dot    { background: var(--red); }
+    .legend-item:nth-child(1) .action { color: var(--red); }
+    .legend-item:nth-child(2) .dot    { background: var(--amber); }
+    .legend-item:nth-child(2) .action { color: var(--amber); }
+    .legend-item:nth-child(3) .dot    { background: var(--green); }
+    .legend-item:nth-child(3) .action { color: var(--green); }
+
+    /* ── Over limit ── */
+    .card.over-limit { border-color: var(--red) !important; }
+    .count-badge.over-limit { color: var(--red) !important; }
+
+    /* Safe area for iPhone home bar */
+    body { padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Tweet Counter</h1>
+    <p>Write with intention — every character counts</p>
+  </header>
+
+  <!-- Main card -->
+  <div class="card" id="card">
+    <textarea
+      id="tweetInput"
+      placeholder="Start typing your tweet…"
+      maxlength="560"
+      autocorrect="on"
+      autocapitalize="sentences"
+      spellcheck="true"
+    ></textarea>
+
+    <div class="counter-row">
+      <div class="progress-wrap">
+        <svg class="arc" viewBox="0 0 72 72" aria-hidden="true">
+          <circle class="arc-bg" cx="36" cy="36" r="30" />
+          <circle class="arc-fill" id="arcFill" cx="36" cy="36" r="30"
+            stroke-dasharray="188.5"
+            stroke-dashoffset="188.5"
+            stroke="#22c55e"
+          />
+        </svg>
+      </div>
+
+      <div style="text-align:right">
+        <div class="count-badge tier-green" id="countBadge">280</div>
+        <div class="count-label" id="countLabel">chars remaining</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tier indicator -->
+  <div class="tier-indicator tier-green" id="tierIndicator">
+    <div class="tier-dot"></div>
+    <div class="tier-text">
+      <strong id="tierTitle">Substantial — post it</strong>
+      <span id="tierSub">120–280 chars · strong signal, worth reading</span>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="dot"></div>
+      <div class="range">0–59</div>
+      <div class="action">Rewrite</div>
+    </div>
+    <div class="legend-item">
+      <div class="dot"></div>
+      <div class="range">60–119</div>
+      <div class="action">Acceptable</div>
+    </div>
+    <div class="legend-item">
+      <div class="dot"></div>
+      <div class="range">120–280</div>
+      <div class="action">Post it</div>
+    </div>
+  </div>
+
+  <script>
+    const MAX = 280;
+    const CIRCUMFERENCE = 2 * Math.PI * 30; // 188.5
+
+    const input       = document.getElementById('tweetInput');
+    const card        = document.getElementById('card');
+    const badge       = document.getElementById('countBadge');
+    const label       = document.getElementById('countLabel');
+    const arcFill     = document.getElementById('arcFill');
+    const tierEl      = document.getElementById('tierIndicator');
+    const tierTitle   = document.getElementById('tierTitle');
+    const tierSub     = document.getElementById('tierSub');
+
+    const TIERS = [
+      {
+        min: 0, max: 59,
+        cls: 'tier-red',
+        color: '#ef4444',
+        title: 'Throwaway — rewrite',
+        sub: '0–59 chars · too brief, add context or substance',
+      },
+      {
+        min: 60, max: 119,
+        cls: 'tier-amber',
+        color: '#f59e0b',
+        title: 'Medium — acceptable',
+        sub: '60–119 chars · decent but could be stronger',
+      },
+      {
+        min: 120, max: 280,
+        cls: 'tier-green',
+        color: '#22c55e',
+        title: 'Substantial — post it',
+        sub: '120–280 chars · strong signal, worth reading',
+      },
+    ];
+
+    function getTier(len) {
+      return TIERS.find(t => len >= t.min && len <= t.max) || TIERS[2];
+    }
+
+    function update() {
+      const len      = input.value.length;
+      const remaining = MAX - len;
+      const over     = len > MAX;
+
+      // Count badge
+      badge.textContent = over ? `-${len - MAX}` : remaining;
+      label.textContent = over ? 'over limit' : 'chars remaining';
+
+      // Arc progress (fills as you type)
+      const progress = Math.min(len / MAX, 1);
+      const offset   = CIRCUMFERENCE * (1 - progress);
+      arcFill.style.strokeDashoffset = offset;
+
+      // Tier
+      const tier = getTier(Math.min(len, MAX));
+
+      // Clear tier classes
+      ['tier-red','tier-amber','tier-green'].forEach(c => {
+        card.classList.remove(c);
+        badge.classList.remove(c);
+        tierEl.classList.remove(c);
+      });
+      card.classList.remove('over-limit');
+      badge.classList.remove('over-limit');
+
+      if (over) {
+        card.classList.add('over-limit');
+        badge.classList.add('over-limit');
+        arcFill.style.stroke = '#ef4444';
+        tierTitle.textContent = 'Over limit — trim it';
+        tierSub.textContent   = `${len - MAX} char${len - MAX !== 1 ? 's' : ''} over — X will cut you off`;
+        tierEl.className = 'tier-indicator tier-red';
+      } else {
+        card.classList.add(tier.cls);
+        badge.classList.add(tier.cls);
+        arcFill.style.stroke = tier.color;
+        tierTitle.textContent = tier.title;
+        tierSub.textContent   = tier.sub;
+        tierEl.className      = `tier-indicator ${tier.cls}`;
+      }
+
+      // Initial empty state — neutral green default
+      if (len === 0) {
+        card.classList.remove('tier-red','tier-amber','tier-green');
+        badge.classList.remove('tier-red','tier-amber','tier-green');
+        badge.classList.add('tier-green');
+        arcFill.style.stroke = '#22c55e';
+        tierTitle.textContent = 'Substantial — post it';
+        tierSub.textContent   = '120–280 chars · strong signal, worth reading';
+        tierEl.className      = 'tier-indicator tier-green';
+      }
+    }
+
+    input.addEventListener('input', update);
+    update(); // initial render
+  </script>
+</body>
+</html>
