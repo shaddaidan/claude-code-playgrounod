@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Tweet Character Counter</title>
+  <title>X Reply Tools</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --red:   #ef4444;
-      --amber: #f59e0b;
-      --green: #22c55e;
-      --bg:    #0f172a;
+      --red:     #ef4444;
+      --amber:   #f59e0b;
+      --green:   #22c55e;
+      --blue:    #3b82f6;
+      --bg:      #0f172a;
       --surface: #1e293b;
       --border:  #334155;
       --text:    #f1f5f9;
@@ -19,7 +20,6 @@
     }
 
     html, body {
-      height: 100%;
       background: var(--bg);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -30,26 +30,36 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: 32px 16px 48px;
-      gap: 24px;
-      min-height: 100%;
+      padding: 32px 16px calc(48px + env(safe-area-inset-bottom));
+      gap: 16px;
+      min-height: 100vh;
     }
 
-    header {
-      text-align: center;
-    }
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 8px; }
+    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    header p  { color: var(--muted); font-size: 0.875rem; margin-top: 4px; }
 
-    header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    header p {
+    /* ── Section divider ── */
+    .section-label {
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       color: var(--muted);
-      font-size: 0.875rem;
-      margin-top: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+    .section-label::before,
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
     /* ── Textarea card ── */
@@ -65,14 +75,14 @@
       gap: 12px;
       transition: border-color 0.25s;
     }
-
-    .card.tier-red    { border-color: var(--red); }
-    .card.tier-amber  { border-color: var(--amber); }
-    .card.tier-green  { border-color: var(--green); }
+    .card.tier-red   { border-color: var(--red); }
+    .card.tier-amber { border-color: var(--amber); }
+    .card.tier-green { border-color: var(--green); }
+    .card.over-limit { border-color: var(--red) !important; }
 
     textarea {
       width: 100%;
-      min-height: 160px;
+      min-height: 140px;
       background: transparent;
       border: none;
       outline: none;
@@ -83,7 +93,6 @@
       font-family: inherit;
       caret-color: var(--text);
     }
-
     textarea::placeholder { color: var(--muted); }
 
     /* ── Counter row ── */
@@ -98,13 +107,13 @@
       font-weight: 800;
       font-variant-numeric: tabular-nums;
       letter-spacing: -0.03em;
-      transition: color 0.25s;
       line-height: 1;
+      transition: color 0.25s;
     }
-
-    .count-badge.tier-red   { color: var(--red); }
-    .count-badge.tier-amber { color: var(--amber); }
-    .count-badge.tier-green { color: var(--green); }
+    .count-badge.tier-red    { color: var(--red); }
+    .count-badge.tier-amber  { color: var(--amber); }
+    .count-badge.tier-green  { color: var(--green); }
+    .count-badge.over-limit  { color: var(--red) !important; }
 
     .count-label {
       font-size: 0.75rem;
@@ -113,17 +122,8 @@
     }
 
     /* ── Progress arc ── */
-    .progress-wrap {
-      display: flex;
-      justify-content: center;
-    }
-
-    svg.arc {
-      transform: rotate(-90deg);
-      width: 72px;
-      height: 72px;
-    }
-
+    .progress-wrap { display: flex; justify-content: center; }
+    svg.arc { transform: rotate(-90deg); width: 72px; height: 72px; }
     .arc-bg   { fill: none; stroke: var(--border); stroke-width: 6; }
     .arc-fill {
       fill: none;
@@ -144,28 +144,16 @@
       transition: background 0.25s, border-color 0.25s;
       border: 1.5px solid transparent;
     }
-
-    .tier-indicator.tier-red {
-      background: rgba(239, 68, 68, 0.12);
-      border-color: rgba(239, 68, 68, 0.35);
-    }
-    .tier-indicator.tier-amber {
-      background: rgba(245, 158, 11, 0.12);
-      border-color: rgba(245, 158, 11, 0.35);
-    }
-    .tier-indicator.tier-green {
-      background: rgba(34, 197, 94, 0.12);
-      border-color: rgba(34, 197, 94, 0.35);
-    }
+    .tier-indicator.tier-red    { background: rgba(239,68,68,.12);  border-color: rgba(239,68,68,.35); }
+    .tier-indicator.tier-amber  { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.35); }
+    .tier-indicator.tier-green  { background: rgba(34,197,94,.12);  border-color: rgba(34,197,94,.35); }
 
     .tier-dot {
-      width: 12px;
-      height: 12px;
+      width: 12px; height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
       transition: background 0.25s;
     }
-
     .tier-indicator.tier-red   .tier-dot { background: var(--red); }
     .tier-indicator.tier-amber .tier-dot { background: var(--amber); }
     .tier-indicator.tier-green .tier-dot { background: var(--green); }
@@ -176,15 +164,10 @@
       font-weight: 700;
       transition: color 0.25s;
     }
-
     .tier-indicator.tier-red   .tier-text strong { color: var(--red); }
     .tier-indicator.tier-amber .tier-text strong { color: var(--amber); }
     .tier-indicator.tier-green .tier-text strong { color: var(--green); }
-
-    .tier-text span {
-      font-size: 0.8125rem;
-      color: var(--muted);
-    }
+    .tier-text span { font-size: 0.8125rem; color: var(--muted); }
 
     /* ── Tier legend ── */
     .legend {
@@ -194,7 +177,6 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
     }
-
     .legend-item {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -202,27 +184,13 @@
       padding: 10px;
       text-align: center;
     }
-
     .legend-item .dot {
-      width: 8px;
-      height: 8px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       margin: 0 auto 6px;
     }
-
-    .legend-item .range {
-      font-size: 0.6875rem;
-      font-weight: 700;
-      color: var(--muted);
-      letter-spacing: 0.03em;
-    }
-
-    .legend-item .action {
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin-top: 2px;
-    }
-
+    .legend-item .range  { font-size: 0.6875rem; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; }
+    .legend-item .action { font-size: 0.75rem; font-weight: 600; margin-top: 2px; }
     .legend-item:nth-child(1) .dot    { background: var(--red); }
     .legend-item:nth-child(1) .action { color: var(--red); }
     .legend-item:nth-child(2) .dot    { background: var(--amber); }
@@ -230,26 +198,173 @@
     .legend-item:nth-child(3) .dot    { background: var(--green); }
     .legend-item:nth-child(3) .action { color: var(--green); }
 
-    /* ── Over limit ── */
-    .card.over-limit { border-color: var(--red) !important; }
-    .count-badge.over-limit { color: var(--red) !important; }
+    /* ══════════════════════════════════════
+       REPLY QUALITY CHECKER
+    ══════════════════════════════════════ */
 
-    /* Safe area for iPhone home bar */
-    body { padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
+    /* Check button */
+    .check-btn {
+      width: 100%;
+      max-width: 560px;
+      padding: 14px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      letter-spacing: 0.01em;
+    }
+    .check-btn:active { transform: scale(0.98); }
+    .check-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    /* Result panel */
+    .quality-panel {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .quality-panel.visible { display: flex; }
+
+    /* Verdict row */
+    .verdict-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .verdict-badge {
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .verdict-badge.strong { color: var(--green); }
+    .verdict-badge.weak   { color: var(--red); }
+
+    .verdict-meta { text-align: right; }
+    .verdict-meta .verdict-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .verdict-meta .verdict-action {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .verdict-meta .verdict-action.strong { color: var(--green); }
+    .verdict-meta .verdict-action.weak   { color: var(--red); }
+
+    /* Confidence bar */
+    .confidence-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .confidence-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .confidence-header span:last-child { font-weight: 700; color: var(--text); }
+
+    .bar-track {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(.4,0,.2,1), background 0.25s;
+      width: 0%;
+    }
+    .bar-fill.strong { background: var(--green); }
+    .bar-fill.weak   { background: var(--red); }
+
+    /* Both-label scores */
+    .score-breakdown {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .score-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .score-item .score-name {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .score-item .score-val {
+      font-size: 1.125rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      margin-top: 2px;
+    }
+    .score-item.winner { border-color: var(--blue); }
+    .score-item.winner .score-val { color: var(--text); }
+
+    /* Loading state */
+    .loading-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error state */
+    .error-msg {
+      font-size: 0.8125rem;
+      color: var(--amber);
+      background: rgba(245,158,11,.1);
+      border: 1px solid rgba(245,158,11,.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Tweet Counter</h1>
-    <p>Write with intention — every character counts</p>
+    <h1>X Reply Tools</h1>
+    <p>Character counter · Reply quality checker</p>
   </header>
 
-  <!-- Main card -->
+  <!-- ── CHARACTER COUNTER ── -->
+  <div class="section-label">Character Counter</div>
+
   <div class="card" id="card">
     <textarea
       id="tweetInput"
-      placeholder="Start typing your tweet…"
+      placeholder="Type your reply here…"
       maxlength="560"
       autocorrect="on"
       autocapitalize="sentences"
@@ -267,7 +382,6 @@
           />
         </svg>
       </div>
-
       <div style="text-align:right">
         <div class="count-badge tier-green" id="countBadge">0</div>
         <div class="count-label" id="countLabel">chars typed</div>
@@ -275,7 +389,6 @@
     </div>
   </div>
 
-  <!-- Tier indicator -->
   <div class="tier-indicator tier-green" id="tierIndicator">
     <div class="tier-dot"></div>
     <div class="tier-text">
@@ -284,7 +397,6 @@
     </div>
   </div>
 
-  <!-- Legend -->
   <div class="legend">
     <div class="legend-item">
       <div class="dot"></div>
@@ -303,65 +415,56 @@
     </div>
   </div>
 
-  <script>
-    const MAX = 280;
-    const CIRCUMFERENCE = 2 * Math.PI * 30; // 188.5
+  <!-- ── REPLY QUALITY CHECKER ── -->
+  <div class="section-label" style="margin-top:8px">Reply Quality</div>
 
-    const input       = document.getElementById('tweetInput');
-    const card        = document.getElementById('card');
-    const badge       = document.getElementById('countBadge');
-    const label       = document.getElementById('countLabel');
-    const arcFill     = document.getElementById('arcFill');
-    const tierEl      = document.getElementById('tierIndicator');
-    const tierTitle   = document.getElementById('tierTitle');
-    const tierSub     = document.getElementById('tierSub');
+  <button class="check-btn" id="checkBtn" disabled>
+    Type a reply to check its quality
+  </button>
+
+  <div class="quality-panel" id="qualityPanel">
+    <!-- content injected by JS -->
+  </div>
+
+  <script>
+    /* ─────────────────────────────────────
+       CHARACTER COUNTER
+    ───────────────────────────────────── */
+    const MAX = 280;
+    const CIRCUMFERENCE = 2 * Math.PI * 30;
+
+    const input     = document.getElementById('tweetInput');
+    const card      = document.getElementById('card');
+    const badge     = document.getElementById('countBadge');
+    const label     = document.getElementById('countLabel');
+    const arcFill   = document.getElementById('arcFill');
+    const tierEl    = document.getElementById('tierIndicator');
+    const tierTitle = document.getElementById('tierTitle');
+    const tierSub   = document.getElementById('tierSub');
+    const checkBtn  = document.getElementById('checkBtn');
+    const panel     = document.getElementById('qualityPanel');
 
     const TIERS = [
-      {
-        min: 0, max: 59,
-        cls: 'tier-red',
-        color: '#ef4444',
-        title: 'Throwaway — rewrite',
-        sub: '0–59 chars · too brief, add context or substance',
-      },
-      {
-        min: 60, max: 119,
-        cls: 'tier-amber',
-        color: '#f59e0b',
-        title: 'Medium — acceptable',
-        sub: '60–119 chars · decent but could be stronger',
-      },
-      {
-        min: 120, max: 280,
-        cls: 'tier-green',
-        color: '#22c55e',
-        title: 'Substantial — post it',
-        sub: '120–280 chars · strong signal, worth reading',
-      },
+      { min: 0,   max: 59,  cls: 'tier-red',   color: '#ef4444', title: 'Throwaway — rewrite',   sub: '0–59 chars · too brief, add context or substance' },
+      { min: 60,  max: 119, cls: 'tier-amber',  color: '#f59e0b', title: 'Medium — acceptable',   sub: '60–119 chars · decent but could be stronger' },
+      { min: 120, max: 280, cls: 'tier-green',  color: '#22c55e', title: 'Substantial — post it', sub: '120–280 chars · strong signal, worth reading' },
     ];
 
     function getTier(len) {
       return TIERS.find(t => len >= t.min && len <= t.max) || TIERS[2];
     }
 
-    function update() {
-      const len      = input.value.length;
-      const remaining = MAX - len;
-      const over     = len > MAX;
+    function updateCounter() {
+      const len  = input.value.length;
+      const over = len > MAX;
 
-      // Count badge
       badge.textContent = len;
       label.textContent = over ? 'over limit' : 'chars typed';
 
-      // Arc progress (fills as you type)
       const progress = Math.min(len / MAX, 1);
-      const offset   = CIRCUMFERENCE * (1 - progress);
-      arcFill.style.strokeDashoffset = offset;
+      arcFill.style.strokeDashoffset = CIRCUMFERENCE * (1 - progress);
 
-      // Tier
       const tier = getTier(Math.min(len, MAX));
-
-      // Clear tier classes
       ['tier-red','tier-amber','tier-green'].forEach(c => {
         card.classList.remove(c);
         badge.classList.remove(c);
@@ -373,33 +476,182 @@
       if (over) {
         card.classList.add('over-limit');
         badge.classList.add('over-limit');
-        arcFill.style.stroke = '#ef4444';
-        tierTitle.textContent = 'Over limit — trim it';
-        tierSub.textContent   = `${len - MAX} char${len - MAX !== 1 ? 's' : ''} over — X will cut you off`;
-        tierEl.className = 'tier-indicator tier-red';
+        arcFill.style.stroke    = '#ef4444';
+        tierTitle.textContent   = 'Over limit — trim it';
+        tierSub.textContent     = `${len - MAX} char${len - MAX !== 1 ? 's' : ''} over — X will cut you off`;
+        tierEl.className        = 'tier-indicator tier-red';
+      } else if (len === 0) {
+        badge.classList.add('tier-green');
+        arcFill.style.stroke    = '#22c55e';
+        tierTitle.textContent   = 'Substantial — post it';
+        tierSub.textContent     = '120–280 chars · strong signal, worth reading';
+        tierEl.className        = 'tier-indicator tier-green';
       } else {
         card.classList.add(tier.cls);
         badge.classList.add(tier.cls);
-        arcFill.style.stroke = tier.color;
-        tierTitle.textContent = tier.title;
-        tierSub.textContent   = tier.sub;
-        tierEl.className      = `tier-indicator ${tier.cls}`;
+        arcFill.style.stroke    = tier.color;
+        tierTitle.textContent   = tier.title;
+        tierSub.textContent     = tier.sub;
+        tierEl.className        = `tier-indicator ${tier.cls}`;
       }
 
-      // Initial empty state — neutral green default
-      if (len === 0) {
-        card.classList.remove('tier-red','tier-amber','tier-green');
-        badge.classList.remove('tier-red','tier-amber','tier-green');
-        badge.classList.add('tier-green');
-        arcFill.style.stroke = '#22c55e';
-        tierTitle.textContent = 'Substantial — post it';
-        tierSub.textContent   = '120–280 chars · strong signal, worth reading';
-        tierEl.className      = 'tier-indicator tier-green';
+      // Update check button state
+      const trimmed = input.value.trim();
+      if (trimmed.length < 5) {
+        checkBtn.disabled = true;
+        checkBtn.textContent = 'Type a reply to check its quality';
+      } else if (!checkBtn.disabled || checkBtn.textContent.startsWith('Type')) {
+        checkBtn.disabled = false;
+        checkBtn.textContent = 'Check Reply Quality';
       }
     }
 
-    input.addEventListener('input', update);
-    update(); // initial render
+    input.addEventListener('input', updateCounter);
+    updateCounter();
+
+    /* ─────────────────────────────────────
+       REPLY QUALITY CHECKER
+    ───────────────────────────────────── */
+    const HF_URL = 'https://api-inference.huggingface.co/models/facebook/bart-large-mnli';
+    const LABELS = ['adds perspective', 'just agreeing'];
+
+    function showLoading(msg) {
+      panel.className = 'quality-panel visible';
+      panel.innerHTML = `
+        <div class="loading-row">
+          <div class="spinner"></div>
+          <span>${msg}</span>
+        </div>`;
+    }
+
+    function showError(msg) {
+      panel.className = 'quality-panel visible';
+      panel.innerHTML = `<div class="error-msg">${msg}</div>`;
+    }
+
+    function showResult(data) {
+      // data.labels are sorted by score descending
+      const topLabel = data.labels[0];
+      const scores   = {};
+      data.labels.forEach((l, i) => { scores[l] = data.scores[i]; });
+
+      const isStrong     = topLabel === 'adds perspective';
+      const verdictWord  = isStrong ? 'STRONG' : 'WEAK';
+      const verdictClass = isStrong ? 'strong' : 'weak';
+      const actionText   = isStrong ? 'Adds perspective — post it' : 'Just agreeing — rewrite it';
+      const confidence   = Math.round(scores[topLabel] * 100);
+
+      const perspScore = Math.round(scores['adds perspective'] * 100);
+      const agreeScore = Math.round(scores['just agreeing'] * 100);
+      const perspWinner = isStrong ? 'winner' : '';
+      const agreeWinner = !isStrong ? 'winner' : '';
+
+      panel.className = 'quality-panel visible';
+      panel.innerHTML = `
+        <div class="verdict-row">
+          <div class="verdict-badge ${verdictClass}">${verdictWord}</div>
+          <div class="verdict-meta">
+            <div class="verdict-label">Reply quality verdict</div>
+            <div class="verdict-action ${verdictClass}">${actionText}</div>
+          </div>
+        </div>
+
+        <div class="confidence-wrap">
+          <div class="confidence-header">
+            <span>Confidence</span>
+            <span>${confidence}%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill ${verdictClass}" id="barFill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="score-breakdown">
+          <div class="score-item ${perspWinner}">
+            <div class="score-name">Adds perspective</div>
+            <div class="score-val">${perspScore}%</div>
+          </div>
+          <div class="score-item ${agreeWinner}">
+            <div class="score-name">Just agreeing</div>
+            <div class="score-val">${agreeScore}%</div>
+          </div>
+        </div>`;
+
+      // Animate bar after paint
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const bar = document.getElementById('barFill');
+          if (bar) bar.style.width = confidence + '%';
+        });
+      });
+    }
+
+    async function runCheck(text, retryAfter) {
+      if (retryAfter) {
+        showLoading(`Model warming up — retrying in ${retryAfter}s…`);
+        await new Promise(r => setTimeout(r, retryAfter * 1000));
+      }
+
+      showLoading('Analysing reply…');
+
+      let res;
+      try {
+        res = await fetch(HF_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inputs: text,
+            parameters: { candidate_labels: LABELS }
+          })
+        });
+      } catch {
+        checkBtn.disabled = false;
+        checkBtn.textContent = 'Check Reply Quality';
+        showError('Network error — check your connection and try again.');
+        return;
+      }
+
+      if (res.status === 503) {
+        // Model cold start — HuggingFace returns estimated_time
+        let wait = 20;
+        try {
+          const body = await res.json();
+          if (body.estimated_time) wait = Math.ceil(body.estimated_time);
+        } catch { /* ignore */ }
+        wait = Math.min(wait, 60); // cap at 60s
+        await runCheck(text, wait);
+        return;
+      }
+
+      if (!res.ok) {
+        checkBtn.disabled = false;
+        checkBtn.textContent = 'Check Reply Quality';
+        showError(`API error ${res.status} — the model may be temporarily unavailable. Try again in a moment.`);
+        return;
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        checkBtn.disabled = false;
+        checkBtn.textContent = 'Check Reply Quality';
+        showError('Unexpected response from API. Try again.');
+        return;
+      }
+
+      checkBtn.disabled = false;
+      checkBtn.textContent = 'Check Again';
+      showResult(data);
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const text = input.value.trim();
+      if (!text || text.length < 5) return;
+      checkBtn.disabled = true;
+      checkBtn.textContent = 'Checking…';
+      runCheck(text, 0);
+    });
   </script>
 </body>
 </html>
