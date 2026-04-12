@@ -102,6 +102,24 @@
       align-items: center;
       justify-content: space-between;
     }
+
+    /* ── Clear button ── */
+    .clear-btn {
+      align-self: flex-end;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      letter-spacing: 0.02em;
+    }
+    .clear-btn:active { color: var(--red); border-color: var(--red); }
+    .clear-btn:disabled { opacity: 0; pointer-events: none; }
     .count-badge {
       font-size: 2rem;
       font-weight: 800;
@@ -318,6 +336,7 @@
   <div class="section-label">Character Counter</div>
 
   <div class="card" id="card">
+    <button class="clear-btn" id="clearBtn" disabled>Clear</button>
     <textarea
       id="tweetInput"
       placeholder="Type your reply here…"
@@ -393,6 +412,7 @@
     const tierTitle = document.getElementById('tierTitle');
     const tierSub   = document.getElementById('tierSub');
     const checkBtn  = document.getElementById('checkBtn');
+    const clearBtn  = document.getElementById('clearBtn');
     const panel     = document.getElementById('qualityPanel');
 
     const CHAR_TIERS = [
@@ -446,6 +466,7 @@
       }
 
       const trimmed = input.value.trim();
+      clearBtn.disabled = len === 0;
       if (trimmed.length < 5) {
         checkBtn.disabled = true;
         checkBtn.textContent = 'Type a reply to check its quality';
@@ -454,6 +475,15 @@
         checkBtn.textContent = 'Check Reply Quality';
       }
     }
+
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      panel.className = 'quality-panel';
+      panel.innerHTML = '';
+      checkBtn.textContent = 'Type a reply to check its quality';
+      updateCounter();
+      input.focus();
+    });
 
     input.addEventListener('input', updateCounter);
     updateCounter();
