@@ -269,8 +269,8 @@
       </div>
 
       <div style="text-align:right">
-        <div class="count-badge tier-green" id="countBadge">280</div>
-        <div class="count-label" id="countLabel">chars remaining</div>
+        <div class="count-badge tier-green" id="countBadge">0</div>
+        <div class="count-label" id="countLabel">chars typed</div>
       </div>
     </div>
   </div>
@@ -350,8 +350,8 @@
       const over     = len > MAX;
 
       // Count badge
-      badge.textContent = over ? `-${len - MAX}` : remaining;
-      label.textContent = over ? 'over limit' : 'chars remaining';
+      badge.textContent = len;
+      label.textContent = over ? 'over limit' : 'chars typed';
 
       // Arc progress (fills as you type)
       const progress = Math.min(len / MAX, 1);
