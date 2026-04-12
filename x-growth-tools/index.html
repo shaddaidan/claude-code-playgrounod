@@ -513,6 +513,7 @@
        REPLY QUALITY CHECKER
     ───────────────────────────────────── */
     const HF_URL = 'https://api-inference.huggingface.co/models/facebook/bart-large-mnli';
+    const HF_TOKEN = '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';
     const LABELS = ['adds perspective', 'just agreeing'];
 
     function showLoading(msg) {
@@ -598,7 +599,10 @@
       try {
         res = await fetch(HF_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${HF_TOKEN}`,
+          },
           body: JSON.stringify({
             inputs: text,
             parameters: { candidate_labels: LABELS }
