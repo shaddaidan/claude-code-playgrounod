@@ -1208,10 +1208,15 @@ function init() {
     if (!document.fullscreenElement && isFS) exitFS();
   });
 
-  // Keyboard shortcut: F key toggles fullscreen
+  // Keyboard shortcuts
   document.addEventListener('keydown', e => {
+    if (e.target.matches('input')) return;
     if (e.key === 'f' || e.key === 'F') {
-      if (!e.target.matches('input')) isFS ? exitFS() : enterFS();
+      isFS ? exitFS() : enterFS();
+    }
+    if (e.key === ' ') {
+      e.preventDefault();  // stop page from scrolling
+      running ? pauseTimer() : startTimer();
     }
   });
 }
